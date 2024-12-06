@@ -1,11 +1,11 @@
 {
 	"schemaVersion": 1,
-	"id": "modid",
-	"version": "${version}",
+	"id": "no-villager-golems",
+	"version": "${mod_version}",
 	"name": "Disable Iron Golems",
 	"description": "Disables villager-spawned iron golems.",
 	"authors": [
-		"Your Name"
+		"Simon K. Horsgaard"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
