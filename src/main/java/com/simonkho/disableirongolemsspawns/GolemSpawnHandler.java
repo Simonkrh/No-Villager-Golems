@@ -11,14 +11,8 @@ public class GolemSpawnHandler {
         ServerEntityEvents.ENTITY_LOAD.register((Entity entity, ServerWorld world) -> {
             if (entity.getType() == EntityType.IRON_GOLEM && entity instanceof IronGolemEntity golem) {
                 if (!golem.isPlayerCreated()) {
-                    // Prevent the golem spawn
                     entity.remove(Entity.RemovalReason.DISCARDED);
-
-                    GolemCountState state = world.getPersistentStateManager().getOrCreate(
-                            GolemCountState.TYPE,
-                            "golem_count"
-                    );
-                    state.increment();
+                    GolemCountState.get(world).increment();
                 }
             }
         });

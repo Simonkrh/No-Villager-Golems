@@ -1,34 +1,34 @@
 package com.simonkho.disableirongolemsspawns;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.RegistryWrapper.WrapperLookup;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentStateManager;
+import net.minecraft.world.PersistentStateType;
 import net.minecraft.datafixer.DataFixTypes;
 
 public class GolemCountState extends PersistentState {
-    private int golemCount = 0;
+    private int golemCount;
 
-    public static final PersistentState.Type<GolemCountState> TYPE = new PersistentState.Type<>(
-            GolemCountState::create,
-            GolemCountState::load,
-            DataFixTypes.LEVEL
-    );
+    // --- Codec for serializing/deserializing this state ---
+    public static final Codec<GolemCountState> CODEC = RecordCodecBuilder.create(inst -> inst.group(
+            Codec.INT.fieldOf("GolemCount").forGetter(GolemCountState::getGolemCount))
+            .apply(inst, GolemCountState::newFromInt));
 
-    public static GolemCountState create() {
-        return new GolemCountState();
+    // --- PersistentStateType holds id + constructor + codec + fix type ---
+    public static final PersistentStateType<GolemCountState> TYPE = new PersistentStateType<>("golem_count",
+            GolemCountState::new, CODEC, DataFixTypes.LEVEL);
+
+    // Constructors used by supplier/codec
+    private GolemCountState() {
+        this.golemCount = 0;
     }
 
-    public static GolemCountState load(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        GolemCountState state = new GolemCountState();
-        state.golemCount = nbt.getInt("GolemCount");
-        return state;
-    }
-
-    @Override
-    public NbtCompound writeNbt(NbtCompound nbt, WrapperLookup lookup) {
-        nbt.putInt("GolemCount", golemCount);
-        return nbt;
+    private static GolemCountState newFromInt(int count) {
+        GolemCountState s = new GolemCountState();
+        s.golemCount = count;
+        return s;
     }
 
     public int getGolemCount() {
@@ -36,7 +36,13 @@ public class GolemCountState extends PersistentState {
     }
 
     public void increment() {
-        golemCount++;
-        markDirty();
+        this.golemCount++;
+        this.markDirty();
+    }
+
+    // Helper to fetch/create from a world
+    public static GolemCountState get(ServerWorld world) {
+        PersistentStateManager mgr = world.getPersistentStateManager();
+        return mgr.getOrCreate(TYPE); // 1-arg overload on 1.21.6
     }
 }
